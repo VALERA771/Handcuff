@@ -12,22 +12,14 @@ namespace Handcuffing
     [CommandHandler(typeof(ClientCommandHandler))]
     public class Handcuff : ICommand
     {
-        public static Dictionary<Player, bool> IsCuffed = new();
-
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             Player player = Player.Get(sender);
 
             if (!Physics.Raycast(player.CameraTransform.position, player.CameraTransform.forward, out var raycastHit, 10,
-                    LayerMask.GetMask("Player", "Hitbox")))
+                    LayerMask.GetMask("Hitbox")) || Player.Get(raycastHit.collider) is not Player pl)
             {
-                response = "Это нельзя связать!";
-                return false;
-            }
-
-            if (Player.Get(raycastHit.collider) is not Player pl)
-            {
-                response = "Это нельзя связать!";
+                response = "Couldn't find player to cuff";
                 return false;
             }
             
@@ -39,7 +31,7 @@ namespace Handcuffing
                 pl.DropItems();
             }
 
-            response = pl.IsCuffed ? "Игрок связан успешно" : "Игрок отпущен";
+            response = pl.IsCuffed ? $"Player {pl.Nickname} has benn cuffed" : $"Player {pl.Nickname} has been released";
             return false;
         }
 
